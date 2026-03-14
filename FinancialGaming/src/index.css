@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  /* Main Backgrounds */
+  --color-game-bg: #121212;
+  --color-card-bg: #1E1E1E;
+
+  /* UI Accents from Figma */
+  --color-accent-blue: #3B82F6;
+  --color-accent-green: #22C55E;
+  --color-accent-red: #EF4444;
+  
+  /* Currency & Brand */
+  --color-naira-gold: #F59E0B;
+}
+
