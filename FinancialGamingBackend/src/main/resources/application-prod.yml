@@ -1,0 +1,6 @@
+# Production profile — activate with SPRING_PROFILES_ACTIVE=prod (Render sets this).
+
+logging:
+  level:
+    root: WARN
+    com.financegaming: INFO

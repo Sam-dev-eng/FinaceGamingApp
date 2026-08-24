@@ -1,609 +1,450 @@
-// import { useState, useEffect } from 'react';
-// import { motion, AnimatePresence } from "framer-motion";
-
-// import { Sidebar } from '../components/game/SideBar';
-// import { OpponentCard } from '../components/game/OpponentCard';
-// import { EventArea } from '../components/game/EventArea';
-// import { Stat } from '../components/game/Stat';
-// import { PayLoanModal } from '../components/game/PayloanModel';
-// import { HousingModal } from '../components/game/HousingModel';
-
-// export const GameScreen = () => {
-
-//   const [turnIndex, setTurnIndex] = useState(0); 
-//   const [currentRound, setCurrentRound] = useState(1);
-
-//   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-//   const [isInitialDecision, setIsInitialDecision] = useState(true);
-
-//   const [hasPaidThisRound, setHasPaidThisRound] = useState(false);
-//   const [diceRolled, setDiceRolled] = useState(false);
-
-//   const [turnTimer, setTurnTimer] = useState(60);
-
-//   const [playerData, setPlayerData] = useState({
-//     cash: 2400000,
-//     loan: 1500000,
-//     netWorth: 900000
-//   });
-
-//   const isMyTurn = turnIndex === 0;
-
-//   const roundEvents = [
-//     {
-//       title: "STUDENT LOAN PHASE",
-//       desc: "You must make a loan payment first!"
-//     },
-//     {
-//       title: "MEDICAL EMERGENCY",
-//       desc: "Unexpected hospital expenses."
-//     },
-//     {
-//       title: "INVESTMENT OPPORTUNITY",
-//       desc: "A new investment option appears."
-//     },
-//     {
-//       title: "RETIREMENT PLANNING",
-//       desc: "Secure your financial future."
-//     }
-//   ];
-
-//   // ---------------- TIMER SYSTEM ----------------
-
-//   useEffect(() => {
-
-//     if (!isMyTurn) return;
-
-//     if (turnTimer <= 0) {
-
-//       if (!diceRolled) {
-//         autoRollDice();
-//       }
-
-//       handleEndTurn();
-//       return;
-//     }
-
-//     const timer = setInterval(() => {
-//       setTurnTimer(prev => prev - 1);
-//     }, 1000);
-
-//     return () => clearInterval(timer);
-
-//   }, [turnTimer, isMyTurn]);
-
-//   const resetTurnState = () => {
-//     setTurnTimer(60);
-//     setHasPaidThisRound(false);
-//     setDiceRolled(false);
-//   };
-
-//   // ---------------- INITIAL HOUSING ----------------
-
-//   const handleHousingConfirm = (choice) => {
-//     console.log("API CALL: Initial Housing ->", choice.id);
-//     setIsInitialDecision(false);
-//   };
-
-//   // ---------------- LOAN PAYMENT ----------------
-
-//   const handleLoanPayment = (amountPaid) => {
-
-//     const newCash = playerData.cash - amountPaid;
-//     const newLoan = playerData.loan - amountPaid;
-
-//     setPlayerData({
-//       cash: newCash,
-//       loan: newLoan,
-//       netWorth: newCash - newLoan
-//     });
-
-//     setHasPaidThisRound(true);
-
-//     console.log("API CALL: Loan Paid ->", amountPaid);
-//   };
-
-//   // ---------------- DICE SYSTEM ----------------
-
-//   const rollDice = () => {
-
-//     if (!hasPaidThisRound) return;
-
-//     const dice = Math.floor(Math.random() * 6) + 1;
-
-//     setDiceRolled(true);
-
-//     console.log("DICE ROLL:", dice);
-
-//   };
-
-//   const autoRollDice = () => {
-
-//     const dice = Math.floor(Math.random() * 6) + 1;
-
-//     setDiceRolled(true);
-
-//     console.log("AUTO DICE ROLL:", dice);
-
-//   };
-
-//   // ---------------- TURN MANAGEMENT ----------------
-
-//   const handleEndTurn = () => {
-
-//     resetTurnState();
-
-//     if (turnIndex < 2) {
-
-//       setTurnIndex(turnIndex + 1);
-
-//     } else {
-
-//       setTurnIndex(0);
-
-//       if (currentRound < 4) {
-//         setCurrentRound(prev => prev + 1);
-//       }
-
-//     }
-//   };
-
-//   const event = roundEvents[currentRound - 1];
-
-//   return (
-//     <div className="h-screen bg-game-bg text-white flex overflow-hidden font-sans">
-
-//       <HousingModal
-//         isOpen={isInitialDecision}
-//         onConfirm={handleHousingConfirm}
-//       />
-
-//       <Sidebar round={currentRound} />
-
-//       <div className="flex-grow flex flex-col p-8 gap-6 max-w-7xl mx-auto w-full">
-
-//         {/* HEADER */}
-
-//         <div className="flex justify-between items-start">
-
-//           <OpponentCard
-//             name="Opponent A"
-//             balance="1.9M"
-//             status={turnIndex === 1 ? "TAKING TURN" : "WAITING"}
-//             isTakingTurn={turnIndex === 1}
-//           />
-
-//           <div className="text-center pt-2">
-
-//             <h1 className="text-[10px] font-black text-gray-700 tracking-[0.6em] uppercase">
-//               Round {currentRound} / 4
-//             </h1>
-
-//             <p className="text-accent-blue text-xs font-bold mt-1">
-//               {isMyTurn ? `TIME LEFT: ${turnTimer}s` : ""}
-//             </p>
-
-//           </div>
-
-//           <OpponentCard
-//             name="Opponent B"
-//             balance="2.1M"
-//             status={turnIndex === 2 ? "TAKING TURN" : "WAITING"}
-//             isTakingTurn={turnIndex === 2}
-//           />
-
-//         </div>
-
-//         {/* EVENT AREA WITH SWIPE */}
-
-//         <div className="relative overflow-hidden">
-
-//           <AnimatePresence mode="wait">
-
-//             <motion.div
-//               key={currentRound}
-//               initial={{ x: 400, opacity: 0 }}
-//               animate={{ x: 0, opacity: 1 }}
-//               exit={{ x: -400, opacity: 0 }}
-//               transition={{ duration: 0.4 }}
-//             >
-
-//               <EventArea
-//                 eventTitle={event.title}
-//                 eventDesc={
-//                   !hasPaidThisRound
-//                     ? "You must make a loan payment first!"
-//                     : diceRolled
-//                       ? "Dice rolled. Continue the game."
-//                       : "Roll the dice to continue."
-//                 }
-//                 isActive={isMyTurn && hasPaidThisRound}
-//                 onRollDice={rollDice}
-//               />
-
-//             </motion.div>
-
-//           </AnimatePresence>
-
-//         </div>
-
-//         {/* FOOTER */}
-
-//         <div className={`bg-card-bg p-8 rounded-[2.5rem] border border-gray-800 flex items-center justify-between shadow-2xl transition-all ${!isMyTurn ? 'opacity-50 grayscale-[0.5]' : 'opacity-100'}`}>
-
-//           <div className="flex items-center gap-6">
-
-//             <div className={`w-16 h-16 rounded-full bg-gray-700 border-2 flex items-center justify-center text-3xl shadow-lg transition-colors ${isMyTurn ? 'border-accent-blue shadow-accent-blue/20' : 'border-gray-600'}`}>
-//               👤
-//             </div>
-
-//             <div>
-
-//               <h2 className="text-accent-blue font-black italic text-xl tracking-tighter">
-//                 YOU
-//               </h2>
-
-//               <p className="text-gray-600 text-[9px] font-black uppercase tracking-widest">
-//                 (PLAYER 1)
-//               </p>
-
-//             </div>
-
-//           </div>
-
-//           <div className="flex gap-10">
-
-//             <Stat
-//               label="Net Worth"
-//               value={playerData.netWorth.toLocaleString()}
-//               barColor="bg-accent-green"
-//               barWidth="w-[70%]"
-//             />
-
-//             <Stat
-//               label="Available Cash"
-//               value={playerData.cash.toLocaleString()}
-//             />
-
-//             <Stat
-//               label="Loan Balance"
-//               value={playerData.loan.toLocaleString()}
-//               textColor="text-accent-red"
-//             />
-
-//           </div>
-
-//           <div className="flex flex-col gap-2 w-48">
-
-//             <div className="flex gap-2">
-
-//               <button
-//                 disabled={!isMyTurn || hasPaidThisRound || turnTimer === 0}
-//                 onClick={() => setIsPayModalOpen(true)}
-//                 className="flex-1 bg-accent-blue text-[9px] font-black py-3 rounded-xl hover:brightness-110 transition shadow-lg shadow-accent-blue/10 disabled:opacity-30 disabled:cursor-not-allowed"
-//               >
-//                 {hasPaidThisRound ? "PAID" : "PAY LOAN"}
-//               </button>
-
-//               <button
-//                 disabled={!isMyTurn}
-//                 className="flex-1 bg-gray-800 text-[9px] font-black py-3 rounded-xl hover:bg-gray-700 transition disabled:opacity-30"
-//               >
-//                 VIEW APART
-//               </button>
-
-//             </div>
-
-//             <button
-//               onClick={handleEndTurn}
-//               disabled={!isMyTurn}
-//               className="w-full bg-accent-red text-[9px] font-black py-3 rounded-xl hover:brightness-110 transition shadow-lg shadow-accent-red/10 disabled:bg-gray-800 disabled:shadow-none"
-//             >
-//               END TURN
-//             </button>
-
-//           </div>
-
-//         </div>
-
-//         <PayLoanModal
-//           isOpen={isPayModalOpen}
-//           onClose={() => setIsPayModalOpen(false)}
-//           currentLoan={playerData.loan}
-//           onConfirm={handleLoanPayment}
-//         />
-
-//       </div>
-
-//     </div>
-//   );
-// };
-
-
- import { Sidebar } from "../components/game/SideBar";
- import { OpponentCard } from "../components/game/OpponentCard"
-// import { Stat } from "../components/game/Stat";
-
-import { useGameEngine } from "../components/game/hooks/useGameEngine";
+import { Sidebar } from "../components/game/SideBar";
+import { OpponentCard } from "../components/game/OpponentCard";
 import { useTurnTimer } from "../components/game/hooks/useTurnTimer";
-
-import { PHASES } from "../components/game/utils/phase";
-import { rollDice } from "../components/game/utils/dice"
-
-// import { HousingPhase } from "../components/game/phases/HousingPhase";
-// import { SurvivalPhase } from "../components/game/phases/SurvivalPhase";
-// import { LoanPhase } from "../components/game/phases/LoanPhase";
-// import { DicePhase } from "../components/game/phases/DicePhase";
-// import { NetWorthPhase } from "../components/game/phases/NetWorthPhase";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { PHASES, GAME_STAGES, isSimultaneousPhase } from "../components/game/utils/phase";
+import { useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router";
+import { resolveSession, saveGameSession, isSpectatorSession } from "../shared/session/gameSessionStorage";
 import { EventArea } from "../components/game/EventArea";
-import { Stat } from "../components/game/Stat";
-import { PayLoanModal } from "../components/game/PayloanModel";
+import { GameHud } from "../components/game/GameHud";
+import { PlayerFooter } from "../components/game/PlayerFooter";
+import { SpectatorLiveFeed } from "../components/game/SpectatorLiveFeed";
 import { HousingModal } from "../components/game/HousingModel";
-
+import { RoundStartModal } from "../components/game/RoundStartModal";
+import { rankPlayersByNetWorth, playerRequiresRentDice, calculateRoundRent } from "../game/gameCalculations";
+import { SURVIVAL_COST, getMinimumLoanPayment } from "../game/gameConstants";
+import { getTurnPhaseBrief } from "../game/roundDetails";
+import { useServerGame } from "../hooks/useServerGame";
 
 export const GameScreen = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const session = resolveSession(location.state ?? {});
+  const gameId = session.gameId;
+  const playerId = session.playerId;
+  const isSpectator = isSpectatorSession(session);
+
+  useEffect(() => {
+    if (gameId && playerId) {
+      saveGameSession(session);
+    }
+  }, [gameId, playerId, session]);
 
   const {
-    round,
-    phase,
-    turnIndex,
-    players,
-    nextTurn,
-    updatePlayer
-  } = useGameEngine();
+    gameState,
+    finalResults,
+    connected,
+    error,
+    loading,
+    selectHousing,
+    paySurvival,
+    payLoan,
+    skipLoan,
+    borrowFromBank,
+    rollDice,
+    dismissRoundStart,
+  } = useServerGame(gameId, playerId, { readOnly: isSpectator });
 
-  const { time } = useTurnTimer(nextTurn);
-  console.log("this is the time")
-  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-  const [isHousingOpen, setIsHousingOpen] = useState(true);
-  const currentPlayer = players[turnIndex];
-  const isMyTurn = turnIndex === 0;
-  const playerData = players[0];
+  useEffect(() => {
+    if (!gameId || !playerId) {
+      navigate("/lobby", { state: { mode: "host", playerName: "YOU" } });
+    }
+  }, [gameId, playerId, navigate]);
+
+  const players = gameState?.players ?? [];
+  const myPlayer = useMemo(
+    () =>
+      isSpectator
+        ? players[0]
+        : players.find((p) => p.id === playerId) ?? players[0],
+    [players, playerId, isSpectator]
+  );
+  const opponents = useMemo(
+    () =>
+      isSpectator
+        ? [...players].sort((a, b) => (a.seatIndex ?? 0) - (b.seatIndex ?? 0))
+        : players
+            .filter((p) => p.id !== playerId)
+            .sort((a, b) => (a.seatIndex ?? 0) - (b.seatIndex ?? 0)),
+    [players, playerId, isSpectator]
+  );
+
+  const gameStage = gameState?.gameStage ?? GAME_STAGES.HOUSING;
+  const round = gameState?.round ?? 1;
+  const phase = gameState?.phase ?? PHASES.SURVIVAL;
+  const turnIndex = gameState?.turnIndex ?? 0;
+  const mySeatIndex = gameState?.mySeatIndex ?? 0;
+  const lastEventMessage = gameState?.lastEventMessage;
+  const isRoundStartOpen = gameState?.isRoundStartOpen ?? false;
+  const roundStartSummary = gameState?.roundStartSummary ?? [];
+  const isResolvingSimultaneous = gameState?.isResolvingSimultaneous ?? false;
+  const simultaneousUpdates = gameState?.simultaneousUpdates ?? [];
+  const isDiceSettling = gameState?.isDiceSettling ?? false;
+  const totalRounds = gameState?.totalRounds ?? 4;
+  const turnTimeoutSeconds = gameState?.turnTimeoutSeconds ?? 10;
+  const turnDeadlineEpochMs = gameState?.turnDeadlineEpochMs ?? null;
+  const phaseDeadlineEpochMs = gameState?.phaseDeadlineEpochMs ?? null;
+
+  const isHousingSetup = gameStage === GAME_STAGES.HOUSING;
+  const isGameComplete = gameStage === GAME_STAGES.COMPLETE;
+  const isSimultaneous = isResolvingSimultaneous || isSimultaneousPhase(phase);
+  const isInteractivePhase =
+    isHousingSetup ||
+    (gameStage === GAME_STAGES.PLAYING &&
+      !isSimultaneous &&
+      !isRoundStartOpen &&
+      [PHASES.SURVIVAL, PHASES.LOAN, PHASES.DICE].includes(phase));
+
+  const currentPlayer = players[turnIndex] ?? myPlayer;
+  const isMyTurn = !isSpectator && turnIndex === mySeatIndex;
+  const needsHousingChoice =
+    isHousingSetup && isMyTurn && !myPlayer?.rentType;
+
+  const turnTimerKey = isHousingSetup
+    ? `setup-${turnIndex}`
+    : isRoundStartOpen
+      ? `${round}-${phase}-${turnIndex}-briefing`
+      : `${round}-${phase}-${turnIndex}`;
+
+  const { formattedTime, secondsLeft } = useTurnTimer(
+    turnDeadlineEpochMs,
+    isInteractivePhase && !isDiceSettling && Boolean(turnDeadlineEpochMs),
+    turnTimerKey
+  );
+
+  useEffect(() => {
+    if (!isGameComplete && !finalResults) return;
+
+    navigate("/summary", {
+      state: {
+        gameResults:
+          finalResults ?? {
+            gameId,
+            totalRounds,
+            currentPlayerId: playerId,
+            players: rankPlayersByNetWorth(players),
+          },
+      },
+    });
+  }, [isGameComplete, finalResults, navigate, gameId, totalRounds, playerId, players]);
 
   const handleHousingConfirm = (choice) => {
-
-    console.log("API CALL: Housing choice", choice);
-
-    setIsHousingOpen(false);
-
-    
+    selectHousing(choice.id);
   };
 
-  const handleLoanPayment = (amountPaid) => {
-    const newCash = currentPlayer.cash - amountPaid;
-    const newLoan = currentPlayer.loan - amountPaid;
-    updatePlayer(turnIndex, {
-      cash: newCash,
-      loan: newLoan
-    });
-    console.log("API CALL: Loan Paid ->", amountPaid);
-    nextTurn();
+  const handlePaySurvival = (rentDiceRoll = null) => {
+    paySurvival(rentDiceRoll);
   };
 
-  const handlePaySurvival = () => {
-    const newCash = currentPlayer.cash - 700000;
-    updatePlayer(turnIndex, { cash: newCash });
-    console.log("API CALL: Survival Cost Paid");
-    nextTurn();
+  const handleLoanPaymentConfirm = (amountPaid) => {
+    payLoan(amountPaid);
   };
 
-  const handleDiceRoll = () => {
-    const dice = rollDice();
-    console.log("DICE:", dice);
-    nextTurn();
+  const handleSkipLoan = () => {
+    skipLoan();
   };
+
+  const handleBorrowFromBank = (amount) => {
+    borrowFromBank(amount);
+  };
+
+  const handleDiceRollComplete = (diceValue) => {
+    rollDice(diceValue);
+  };
+
+  const isDicePhase = phase === PHASES.DICE;
+  const isSurvivalPhase = phase === PHASES.SURVIVAL;
+  const isLoanPhase = phase === PHASES.LOAN;
+  const isCurrentTurnPhase =
+    !isHousingSetup && !isSimultaneous && !isRoundStartOpen;
+  const isMyDiceTurn =
+    isDicePhase && (isSpectator ? isCurrentTurnPhase : isMyTurn && isCurrentTurnPhase);
+  const isMySurvivalTurn =
+    isSurvivalPhase && (isSpectator ? isCurrentTurnPhase : isMyTurn && isCurrentTurnPhase);
+  const isMyParentsRentTurn =
+    isMySurvivalTurn && playerRequiresRentDice(isSpectator ? currentPlayer : myPlayer);
+  const isMyFixedRentSurvivalTurn =
+    isMySurvivalTurn &&
+    !playerRequiresRentDice(isSpectator ? currentPlayer : currentPlayer);
+  const isMyLoanTurn =
+    isLoanPhase && (isSpectator ? isCurrentTurnPhase : isMyTurn && isCurrentTurnPhase);
 
   const getEventTitle = () => {
+    if (isHousingSetup) return "HOUSING DECISION";
 
     switch (phase) {
-
-      case PHASES.HOUSING:
-        return "HOUSING DECISION";
-
       case PHASES.SURVIVAL:
-        return "SURVIVAL COST";
-
+        return "SURVIVAL + RENT";
       case PHASES.LOAN:
         return "STUDENT LOAN PAYMENT";
-
       case PHASES.DICE:
         return "UNCERTAINTY EVENT";
-
       case PHASES.NETWORTH:
         return "NET WORTH UPDATE";
-
       default:
         return "";
-
     }
   };
 
   const getEventDesc = () => {
+    if (isHousingSetup) {
+      return isMyTurn
+        ? "Choose where to live — this decision is locked for the entire game."
+        : "Waiting for all players to choose housing before Round 1 begins.";
+    }
 
     switch (phase) {
-
-      case PHASES.HOUSING:
-        return "Choose where to live.";
-
       case PHASES.SURVIVAL:
-        return "Pay 700k for survival expenses.";
-
+        return playerRequiresRentDice(myPlayer)
+          ? "Roll the dice to calculate your rent (2% inflation per pip), then pay survival + rent."
+          : `Pay survival (₦${SURVIVAL_COST.toLocaleString()}) plus your round rent.`;
       case PHASES.LOAN:
-        return "Choose an amount to pay your loan.";
-
+        return `Loan payment is optional. Recommended minimum ₦${getMinimumLoanPayment(round).toLocaleString()} — skipping hurts your credit score. 10% interest applies after each round.`;
       case PHASES.DICE:
-        return "Roll the dice to reveal an event.";
-
+        return "Roll the dice to reveal an uncertainty event.";
       case PHASES.NETWORTH:
-        return "Calculating net worth.";
-
+        return "10% loan interest is being applied to all remaining balances.";
       default:
         return "";
-
     }
   };
 
+  const estimatedSurvivalTotal =
+    isMyFixedRentSurvivalTurn && myPlayer?.rentType
+      ? SURVIVAL_COST + calculateRoundRent(myPlayer, round)
+      : null;
+  const survivalShortfall =
+    estimatedSurvivalTotal != null && myPlayer
+      ? Math.max(0, estimatedSurvivalTotal - myPlayer.cash)
+      : null;
+
+  const bankAvailable =
+    !isSpectator &&
+    gameStage === GAME_STAGES.PLAYING &&
+    isMyTurn &&
+    !isSimultaneous &&
+    !isRoundStartOpen &&
+    !isDiceSettling;
+
+  const turnBrief = getTurnPhaseBrief({
+    phase,
+    round,
+    isHousingSetup,
+    isSimultaneous,
+    requiresRentDice: playerRequiresRentDice(currentPlayer),
+    minLoanPayment: getMinimumLoanPayment(round),
+    survivalCost: SURVIVAL_COST,
+  });
+
+  const turnOwnerLabel = isSimultaneous
+    ? "All players"
+    : isSpectator
+      ? `${currentPlayer?.name ?? "Player"}'s turn`
+      : isMyTurn
+        ? "Your turn"
+        : `${currentPlayer?.name ?? "Opponent"}'s turn`;
+
+  const visualPhase = useMemo(() => {
+    if (isSimultaneous) return "simultaneous";
+    if (isHousingSetup) return "housing";
+    switch (phase) {
+      case PHASES.SURVIVAL:
+        return "survival";
+      case PHASES.LOAN:
+        return "loan";
+      case PHASES.DICE:
+        return "dice";
+      case PHASES.NETWORTH:
+        return "networth";
+      default:
+        return "neutral";
+    }
+  }, [isSimultaneous, isHousingSetup, phase]);
+
+  const eventRollKey = `${round}-${phase}-${turnIndex}`;
+
+  const roomCode = gameState?.roomCode ?? session.roomCode ?? "—";
+
+  const playerTurnIndex = (player) =>
+    player ? players.findIndex((p) => p.id === player.id) : -1;
+
+  const playerStatus = (player) => {
+    if (!player) return "WAITING";
+    const idx = playerTurnIndex(player);
+    if (isHousingSetup) {
+      return turnIndex === idx ? "CHOOSING HOME" : "WAITING";
+    }
+    if (isSimultaneous) return "UPDATING";
+    return turnIndex === idx ? "TAKING TURN" : "WAITING";
+  };
+
+  const isPlayerTurn = (player) => {
+    if (!player) return false;
+    const idx = playerTurnIndex(player);
+    return isHousingSetup ? turnIndex === idx : isSimultaneous || turnIndex === idx;
+  };
+
+  const renderOpponentCard = (player) => (
+    <OpponentCard
+      name={player.name}
+      netWorth={player.cash - player.loan}
+      cash={player.cash}
+      loan={player.loan}
+      creditScore={player.creditScore}
+      status={playerStatus(player)}
+      isTakingTurn={isPlayerTurn(player)}
+    />
+  );
+
+  const hudProps = {
+    isHousingSetup,
+    round,
+    totalRounds,
+    currentPlayerName: currentPlayer?.name ?? "—",
+    formattedTime,
+    secondsLeft,
+    showTimer: isInteractivePhase && Boolean(turnDeadlineEpochMs),
+    turnTimeoutSeconds,
+    connected,
+    turnBrief,
+    turnOwnerLabel,
+    isMyTurn,
+    isSpectator,
+    showBriefing: !isRoundStartOpen && gameStage !== GAME_STAGES.COMPLETE,
+  };
+
+  if (loading || !gameState || !myPlayer || !connected) {
+    return (
+      <div className="min-h-screen bg-game-bg text-white flex flex-col items-center justify-center font-sans gap-4">
+        <div className="text-accent-blue text-5xl animate-pulse">💠</div>
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500">
+          {loading ? "Loading game…" : connected ? "Syncing game state…" : "Connecting to server…"}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen bg-game-bg text-white flex overflow-hidden font-sans">
+    <div className="h-[100dvh] bg-game-bg text-white flex flex-col md:flex-row overflow-hidden font-sans">
+      <RoundStartModal
+        round={round}
+        players={roundStartSummary}
+        isOpen={isRoundStartOpen && gameStage === GAME_STAGES.PLAYING && !isSpectator}
+        onContinue={dismissRoundStart}
+        phaseDeadlineEpochMs={phaseDeadlineEpochMs}
+      />
 
       <HousingModal
-        isOpen={isHousingOpen && phase === PHASES.HOUSING}
+        isOpen={needsHousingChoice}
         onConfirm={handleHousingConfirm}
       />
 
-      <Sidebar round={round} />
+      <Sidebar round={round} totalRounds={totalRounds} />
 
-      <div className="flex-grow flex flex-col p-8 gap-6 max-w-7xl mx-auto w-full">
+      <div className="flex-grow flex flex-col min-h-0 min-w-0 p-2 sm:p-3 md:p-4 gap-1.5 sm:gap-2 max-w-7xl mx-auto w-full overflow-hidden safe-area-bottom">
+        {/* Status bar */}
+        <header className="shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-0.5 sm:px-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-gray-600 shrink-0">
+              Room
+            </span>
+            <span className="font-mono text-[11px] sm:text-xs font-bold text-naira-gold truncate">
+              {roomCode}
+            </span>
+            <span className="md:hidden text-[8px] font-black uppercase tracking-wider text-gray-600 shrink-0">
+              · R{round}/{totalRounds}
+            </span>
+            {isSpectator && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-accent-blue/15 text-accent-blue border border-accent-blue/30 shrink-0">
+                Spectator
+              </span>
+            )}
+          </div>
+          <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-gray-600 text-right shrink-0 max-w-[50%] truncate">
+            {isHousingSetup ? "Housing" : getEventTitle().replace(/_/g, " ")}
+          </p>
+        </header>
 
-        {/* HEADER */}
-
-        <div className="flex justify-between items-start">
-
-          <OpponentCard
-            name="Opponent A"
-            balance="1.9M"
-            status={turnIndex === 1 ? "TAKING TURN" : "WAITING"}
-            isTakingTurn={turnIndex === 1}
-          />
-
-          <div className="text-center pt-2">
-
-            <h1 className="text-[10px] font-black text-gray-700 tracking-[0.6em] uppercase">
-              Round {round} / 4
-            </h1>
-
-            <p className="text-accent-blue text-xs font-bold mt-1">
-              {isMyTurn ? `TIME LEFT: ${time}s` : ""}
+        {error && (
+          <div className="shrink-0 bg-accent-red/10 border border-accent-red/40 rounded-xl px-3 py-2 text-center">
+            <p className="text-accent-red text-[10px] font-bold uppercase tracking-widest">
+              {error}
             </p>
-
           </div>
+        )}
 
-          <OpponentCard
-            name="Opponent B"
-            balance="2.1M"
-            status={turnIndex === 2 ? "TAKING TURN" : "WAITING"}
-            isTakingTurn={turnIndex === 2}
-          />
-
-        </div>
-
-        {/* EVENT AREA */}
-
-        <div className="relative overflow-hidden">
-
-          <AnimatePresence mode="wait">
-
-            <motion.div
-              key={phase}
-              initial={{ x: 400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -400, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-
-              <EventArea
-                eventTitle={getEventTitle()}
-                eventDesc={getEventDesc()}
-                isActive={isMyTurn}
-                onRollDice={handleDiceRoll}
-              />
-
-            </motion.div>
-
-          </AnimatePresence>
-
-        </div>
-
-        {/* FOOTER */}
-
-        <div className={`bg-card-bg p-8 rounded-[2.5rem] border border-gray-800 flex items-center justify-between shadow-2xl transition-all ${!isMyTurn ? 'opacity-50 grayscale-[0.5]' : 'opacity-100'}`}>
-
-          <div className="flex items-center gap-6">
-
-            <div className={`w-16 h-16 rounded-full bg-gray-700 border-2 flex items-center justify-center text-3xl shadow-lg transition-colors ${isMyTurn ? 'border-accent-blue shadow-accent-blue/20' : 'border-gray-600'}`}>
-              👤
+        {/* Top: players + HUD */}
+        {isSpectator ? (
+          <div className="flex-1 min-h-0 flex flex-col gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 shrink-0">
+              {players.map((player) => (
+                <div key={player.id} className="min-w-0">{renderOpponentCard(player)}</div>
+              ))}
             </div>
-
-            <div>
-
-              <h2 className="text-accent-blue font-black italic text-xl tracking-tighter">
-                YOU
-              </h2>
-
-              <p className="text-gray-600 text-[9px] font-black uppercase tracking-widest">
-                (PLAYER 1)
-              </p>
-
+            <div className="shrink-0 flex justify-center">
+              <GameHud {...hudProps} />
             </div>
-
+            <SpectatorLiveFeed
+              lastEventMessage={lastEventMessage}
+              simultaneousUpdates={simultaneousUpdates}
+              isSimultaneous={isSimultaneous}
+            />
           </div>
-
-          <div className="flex gap-10">
-
-            <Stat
-              label="Net Worth"
-              value={(playerData.cash - playerData.loan).toLocaleString()}
-              barColor="bg-accent-green"
-              barWidth="w-[70%]"
-            />
-
-            <Stat
-              label="Available Cash"
-              value={playerData.cash.toLocaleString()}
-            />
-
-            <Stat
-              label="Loan Balance"
-              value={playerData.loan.toLocaleString()}
-              textColor="text-accent-red"
-            />
-
-          </div>
-
-          <div className="flex flex-col gap-2 w-48">
-
-            <div className="flex gap-2">
-
-              <button
-                disabled={!isMyTurn || phase !== PHASES.LOAN}
-                onClick={() => setIsPayModalOpen(true)}
-                className="flex-1 bg-accent-blue text-[9px] font-black py-3 rounded-xl hover:brightness-110 transition shadow-lg shadow-accent-blue/10 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                PAY LOAN
-              </button>
-
-              <button
-                disabled={!isMyTurn}
-                className="flex-1 bg-gray-800 text-[9px] font-black py-3 rounded-xl hover:bg-gray-700 transition disabled:opacity-30"
-              >
-                VIEW APART
-              </button>
-
+        ) : (
+          <div className="flex-1 min-h-0 flex flex-col gap-1.5 sm:gap-2 overflow-hidden">
+          <div className="shrink-0 grid grid-cols-2 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,16rem)] gap-2 sm:gap-3 lg:gap-4 auto-rows-min">
+            <div className="min-w-0 order-2 lg:order-none lg:col-start-1 lg:row-start-1">
+              {opponents[0] && renderOpponentCard(opponents[0])}
             </div>
-
-            <button
-              onClick={phase === PHASES.SURVIVAL ? handlePaySurvival : nextTurn}
-              disabled={!isMyTurn}
-              className="w-full bg-accent-red text-[9px] font-black py-3 rounded-xl hover:brightness-110 transition shadow-lg shadow-accent-red/10 disabled:bg-gray-800 disabled:shadow-none"
-            >
-              END TURN
-            </button>
-
+            <div className="col-span-2 order-1 lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-1 min-w-0">
+              <GameHud {...hudProps} />
+            </div>
+            <div className="min-w-0 order-3 lg:order-none lg:col-start-3 lg:row-start-1">
+              {opponents[1] && renderOpponentCard(opponents[1])}
+            </div>
           </div>
 
-        </div>
+        {/* Event area — scrollable so action buttons stay reachable */}
+        <section className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-gray-800/60 bg-black/20">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col p-1 sm:p-1.5">
+            <EventArea
+              eventTitle={getEventTitle()}
+              eventDesc={getEventDesc()}
+              visualPhase={visualPhase}
+              isActive={isSimultaneous || isMyTurn}
+              isSimultaneous={isSimultaneous}
+              showDice={isMyDiceTurn}
+              showSurvival={isMyFixedRentSurvivalTurn}
+              showRentDice={isMyParentsRentTurn}
+              showLoan={isMyLoanTurn}
+              survivalCost={SURVIVAL_COST}
+              currentLoan={currentPlayer?.loan ?? 0}
+              currentCash={currentPlayer?.cash ?? 0}
+              creditScore={myPlayer?.creditScore ?? 500}
+              minLoanPayment={getMinimumLoanPayment(round)}
+              survivalShortfall={survivalShortfall}
+              estimatedSurvivalTotal={estimatedSurvivalTotal}
+              onPaySurvival={handlePaySurvival}
+              onPayLoan={handleLoanPaymentConfirm}
+              onSkipLoan={handleSkipLoan}
+              onRollComplete={handleDiceRollComplete}
+              lastEventMessage={lastEventMessage}
+              balanceUpdates={simultaneousUpdates}
+              rollKey={eventRollKey}
+            />
+          </div>
+        </section>
 
-        <PayLoanModal
-          isOpen={isPayModalOpen}
-          onClose={() => setIsPayModalOpen(false)}
-          currentLoan={playerData.loan}
-          onConfirm={handleLoanPayment}
+        <PlayerFooter
+          myPlayer={myPlayer}
+          isMyTurn={isMyTurn}
+          bankAvailable={bankAvailable}
+          survivalShortfall={survivalShortfall}
+          onBorrow={handleBorrowFromBank}
         />
-
+          </div>
+        )}
       </div>
-
     </div>
   );
 };

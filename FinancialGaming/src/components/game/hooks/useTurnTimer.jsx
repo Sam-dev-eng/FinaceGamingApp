@@ -1,24 +1,40 @@
 import { useEffect, useState } from "react";
+import { formatTurnTime } from "../../../config/env";
 
-export const useTurnTimer = (onTimeout) => {
+/** Countdown synced to a server-provided epoch-ms deadline. */
+export const useTurnTimer = (deadlineEpochMs, enabled = true, resetKey = "") => {
+  const [secondsLeft, setSecondsLeft] = useState(0);
 
-  const [time, setTime] = useState(10);
   useEffect(() => {
-    const timer = setInterval(() => {
-      console.log("running this function again")
-      setTime((prev) => {
-        if (prev < 2) {
-          console.log("loadTime out")
-          onTimeout();
-          return 10;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (!enabled || !deadlineEpochMs) {
+      setSecondsLeft(0);
+      return;
+    }
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadlineEpochMs - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+    };
+
+    tick();
+    const timer = setInterval(tick, 250);
     return () => clearInterval(timer);
-  }, [onTimeout]);
-  const resetTimer = () => {
-    setTime(10);
+  }, [enabled, deadlineEpochMs, resetKey]);
+
+  return {
+    secondsLeft,
+    formattedTime: formatTurnTime(secondsLeft),
   };
-  return { time, resetTimer };
-};  
+};
+
+/** Countdown for round-start / phase modals. */
+export const usePhaseTimer = (deadlineEpochMs, enabled = true, resetKey = "") =>
+  useTurnTimer(deadlineEpochMs, enabled, resetKey);
+
+export const formatTimeoutLabel = (totalSeconds) => {
+  if (totalSeconds >= 60) {
+    const minutes = Math.round(totalSeconds / 60);
+    return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+  }
+  return totalSeconds === 1 ? "1 second" : `${totalSeconds} seconds`;
+};

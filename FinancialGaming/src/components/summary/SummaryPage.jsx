@@ -1,76 +1,103 @@
-import { useNavigate } from 'react-router';
-import { ResultRow } from '../../components/summary/ResultRow';
-import { LedgerRow } from '../../components/summary/LedgerRow';
+import { useNavigate } from "react-router";
+import { useGameResults } from "../../hooks/useGameResults";
+import { WinnerBanner } from "./WinnerBanner";
+import { NetWorthBreakdown } from "./NetWorthBreakdown";
+import { RoundLedger } from "./RoundLedger";
+import { ResultRow } from "./ResultRow";
+import { TOTAL_ROUNDS } from "../../game/gameConstants";
 
 export const SummaryPage = () => {
   const navigate = useNavigate();
+  const {
+    loading,
+    rankedPlayers,
+    winner,
+    breakdowns,
+    currentPlayer,
+    isCurrentPlayerWinner,
+  } = useGameResults();
 
-  // Mock data for the final state
-  const finalResults = [
-    { rank: 1, name: "YOU", netWorth: "3,800,000", isMain: true },
-    { rank: 2, name: "OPPONENT B", netWorth: "2,100,000", isMain: false },
-    { rank: 3, name: "OPPONENT A", netWorth: "1,400,000", isMain: false }
-  ];
-
-  const roundHistory = [
-    { round: 1, income: "3,400,000", eventName: "Job Loss!", eventCost: "200,000" },
-    { round: 2, income: "800,000", eventName: "Rent Paid", eventCost: "600,000" },
-    { round: 3, income: "800,000", eventName: "Rent Paid", eventCost: "600,000" },
-    { round: 4, income: "800,000", eventName: null, eventCost: null }
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-game-bg text-white flex flex-col items-center justify-center font-sans">
+        <div className="text-accent-blue text-5xl mb-6 animate-pulse">💠</div>
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 animate-pulse">
+          Calculating Final Net Worth...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-game-bg text-white flex flex-col items-center p-8 font-sans overflow-y-auto">
-      <div className="w-full max-w-2xl mt-8">
-        
-        {/* Title Section */}
-        <div className="text-center mb-10">
+      <div className="w-full max-w-3xl mt-4">
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-black italic uppercase tracking-tighter scale-y-110 mb-2">
-            Round 4 <span className="text-accent-blue">Summary</span> & Results
+            Final <span className="text-accent-blue">Results</span>
           </h1>
-          <div className="h-1 w-20 bg-accent-blue mx-auto rounded-full"></div>
+          <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em]">
+            After {TOTAL_ROUNDS} Rounds — Net Worth = Cash − Loan
+          </p>
+          <div className="h-1 w-20 bg-accent-blue mx-auto rounded-full mt-4" />
         </div>
 
-        {/* SECTION 1: Top 3 Results */}
-        <section className="mb-12">
-          {finalResults.map(player => (
-            <ResultRow key={player.rank} {...player} />
+        {winner && (
+          <section className="mb-10">
+            <WinnerBanner
+              winner={winner}
+              isCurrentPlayerWinner={isCurrentPlayerWinner}
+              totalRounds={TOTAL_ROUNDS}
+            />
+          </section>
+        )}
+
+        <section className="mb-10">
+          <h2 className="text-sm font-black uppercase tracking-[0.4em] mb-6 text-center text-gray-400">
+            Leaderboard
+          </h2>
+          {rankedPlayers.map((player) => (
+            <ResultRow
+              key={player.id}
+              rank={player.rank}
+              name={player.name}
+              netWorth={player.netWorth.toLocaleString("en-NG")}
+              isMain={player.id === currentPlayer?.id}
+            />
           ))}
         </section>
 
-        {/* SECTION 2: Your Detailed Journey */}
-        <section className="bg-card-bg/40 rounded-[2.5rem] p-8 border border-gray-800 shadow-2xl backdrop-blur-sm">
-          <h2 className="text-sm font-black uppercase tracking-[0.4em] mb-8 text-center text-gray-400">
-            Player Ledger - <span className="text-white">Your Journey</span>
+        <section className="mb-10">
+          <h2 className="text-sm font-black uppercase tracking-[0.4em] mb-6 text-center text-gray-400">
+            Net Worth <span className="text-white">Calculations</span>
           </h2>
-          
-          <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-            {roundHistory.map(round => (
-              <LedgerRow key={round.round} {...round} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {breakdowns.map((breakdown) => (
+              <NetWorthBreakdown
+                key={breakdown.playerId}
+                breakdown={breakdown}
+                isHighlighted={breakdown.playerId === currentPlayer?.id}
+              />
             ))}
-          </div>
-          
-          {/* Final Footer Calculation */}
-          <div className="mt-8 p-6 bg-black/60 rounded-3xl flex justify-between items-center border border-accent-blue/30 shadow-inner">
-            <div>
-              <p className="text-[10px] font-black uppercase text-accent-blue tracking-widest">Total Final</p>
-              <p className="text-lg font-black italic uppercase">Net Worth</p>
-            </div>
-            <span className="text-3xl font-mono text-naira-gold drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
-              ₦3,800,000
-            </span>
           </div>
         </section>
 
-        {/* Footer Actions */}
-        <div className="flex flex-col gap-4 mt-12 mb-12">
-          <button 
-            onClick={() => navigate('/')}
+        {currentPlayer?.roundHistory?.length > 0 && (
+          <section className="bg-card-bg/40 rounded-[2.5rem] p-8 border border-gray-800 shadow-2xl backdrop-blur-sm mb-10">
+            <h2 className="text-sm font-black uppercase tracking-[0.4em] mb-8 text-center text-gray-400">
+              Your Round-by-Round <span className="text-white">Ledger</span>
+            </h2>
+            <RoundLedger roundHistory={currentPlayer.roundHistory} />
+          </section>
+        )}
+
+        <div className="flex flex-col gap-4 mb-12">
+          <button
+            onClick={() => navigate("/")}
             className="w-full bg-white text-black py-5 rounded-2xl font-black text-xl italic tracking-tighter hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-white/5 cursor-pointer"
           >
             PLAY NEW GAME
           </button>
-          <button className="text-[10px] font-black uppercase text-gray-600 tracking-[0.5em] hover:text-white transition">
+          <button className="text-[10px] font-black uppercase text-gray-600 tracking-[0.5em] hover:text-white transition cursor-pointer">
             Export Financial Report (PDF)
           </button>
         </div>

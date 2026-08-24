@@ -1,0 +1,5 @@
+finance-gaming:
+  turn-timeout-seconds: 10
+  round-start-duration-ms: 60000
+  net-worth-phase-duration-ms: 5000
+  dice-result-delay-ms: 4000

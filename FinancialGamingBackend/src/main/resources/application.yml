@@ -1,0 +1,29 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: finance-gaming-backend
+
+finance-gaming:
+  max-players: 3
+  total-rounds: 4
+  turn-timeout-seconds: 10
+  round-start-duration-ms: 60000
+  net-worth-phase-duration-ms: 5000
+  dice-result-delay-ms: 4000
+  # Keep finished games just long enough for summary screens / late reconnects
+  completed-game-retention-ms: 120000
+  cors-allowed-origins:
+    - http://localhost:5173
+    - http://localhost:5174
+    - http://localhost:5175
+    - http://localhost:5176
+    - http://127.0.0.1:5173
+    - http://127.0.0.1:5174
+    - http://127.0.0.1:5175
+    - http://127.0.0.1:5176
+
+logging:
+  level:
+    com.financegaming: INFO
