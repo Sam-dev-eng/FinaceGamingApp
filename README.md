@@ -61,22 +61,42 @@ Full details: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ## Deploy (Vercel + Render)
 
-### 1. Backend on Render
+### 1. Backend on Render (Docker)
 
-1. Push this repo to GitHub and create a **Web Service** on [Render](https://render.com).
-2. Use the repo root; set **Root Directory** to `FinancialGamingBackend` (or apply `render.yaml` from the repo root).
-3. **Build command:** `mvn clean package -DskipTests`
-4. **Start command:** `java -jar target/finance-gaming-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod`
-5. **Health check path:** `/api/health`
-6. Add environment variable:
-   - `CORS_ALLOWED_ORIGINS` = your Vercel URL(s), comma-separated  
-     Example: `https://finance-frenzy.vercel.app`  
-     Add preview URLs too if you test PR deploys (each preview gets its own origin).
-7. Copy the Render service URL (e.g. `https://finance-gaming-backend.onrender.com`).
+Render does not include Java in its native runtimes, so the backend ships as a **Docker image** (`FinancialGamingBackend/Dockerfile`).
+
+1. Push this repo to GitHub.
+2. In [Render](https://render.com): **New +** → **Web Service** → connect your repo.
+3. Set **Language** to **Docker** (not Node/Python).
+4. Configure paths (monorepo — frontend and backend share one repo):
+
+   | Setting | Value |
+   |---------|--------|
+   | **Dockerfile Path** | `FinancialGamingBackend/Dockerfile` |
+   | **Docker Context** | `FinancialGamingBackend` |
+   | **Health Check Path** | `/api/health` |
+
+   Or use **New +** → **Blueprint** and apply `render.yaml` from the repo root.
+
+5. Add environment variables:
+
+   | Key | Value |
+   |-----|--------|
+   | `SPRING_PROFILES_ACTIVE` | `prod` |
+   | `CORS_ALLOWED_ORIGINS` | Your frontend URL(s), comma-separated |
+
+   Example: `https://finance-frenzy.vercel.app` or `http://localhost:5173` while testing locally.
+
+6. Deploy and copy your service URL (e.g. `https://finance-gaming-backend.onrender.com`).
 
 **Note:** Render’s free tier sleeps after inactivity (~30–60s cold start). For live multiplayer, use a paid **Starter** instance.
 
-Verify: `curl https://YOUR-BACKEND.onrender.com/api/health` → `{"status":"UP",...}`
+Verify:
+
+```bash
+curl https://YOUR-BACKEND.onrender.com/api/health
+# → {"status":"UP","timestamp":"..."}
+```
 
 ### 2. Frontend on Vercel
 

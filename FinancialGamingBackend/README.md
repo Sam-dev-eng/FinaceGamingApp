@@ -125,12 +125,23 @@ stompClient.publish({ destination: "/app/game.action", body: JSON.stringify(acti
 
 Wire lobby creation/join to the REST API, then connect WebSocket with the returned `gameId` and send actions using your assigned `playerId`.
 
-## Production (Render)
+## Production (Render via Docker)
 
-- Profile: `prod` (`application-prod.yml`)
-- Health: `GET /api/health`
-- Port: `${PORT}` (Render sets this automatically)
-- CORS / WebSocket origins: set `CORS_ALLOWED_ORIGINS` to your Vercel URL(s), comma-separated
+Render has no native Java runtime — deploy using the included **Dockerfile**.
+
+| Setting | Value |
+|---------|--------|
+| Language | **Docker** |
+| Dockerfile Path | `FinancialGamingBackend/Dockerfile` |
+| Docker Context | `FinancialGamingBackend` |
+| Health check | `/api/health` |
+
+Environment variables:
+
+| Key | Value |
+|-----|--------|
+| `SPRING_PROFILES_ACTIVE` | `prod` |
+| `CORS_ALLOWED_ORIGINS` | Vercel URL(s), comma-separated |
 
 See root [README.md](../README.md#deploy-vercel--render) for full deploy steps.
 
