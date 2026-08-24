@@ -68,15 +68,27 @@ Render does not include Java in its native runtimes, so the backend ships as a *
 1. Push this repo to GitHub.
 2. In [Render](https://render.com): **New +** → **Web Service** → connect your repo.
 3. Set **Language** to **Docker** (not Node/Python).
-4. Configure paths (monorepo — frontend and backend share one repo):
+4. Configure paths — **pick ONE approach** (do not mix them or Render looks for `FinancialGamingBackend/FinancialGamingBackend`):
+
+   **Option A — Root Directory set (recommended)**
 
    | Setting | Value |
    |---------|--------|
+   | **Root Directory** | `FinancialGamingBackend` |
+   | **Dockerfile Path** | `./Dockerfile` |
+   | **Docker Context** | `.` |
+   | **Health Check Path** | `/api/health` |
+
+   **Option B — Root Directory empty**
+
+   | Setting | Value |
+   |---------|--------|
+   | **Root Directory** | *(leave empty)* |
    | **Dockerfile Path** | `FinancialGamingBackend/Dockerfile` |
    | **Docker Context** | `FinancialGamingBackend` |
    | **Health Check Path** | `/api/health` |
 
-   Or use **New +** → **Blueprint** and apply `render.yaml` from the repo root.
+   Or use **New +** → **Blueprint** and apply `render.yaml` from the repo root (uses Option A).
 
 5. Add environment variables:
 

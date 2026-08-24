@@ -2,8 +2,9 @@ services:
   - type: web
     name: finance-gaming-backend
     runtime: docker
-    dockerfilePath: FinancialGamingBackend/Dockerfile
-    dockerContext: FinancialGamingBackend
+    rootDir: FinancialGamingBackend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
